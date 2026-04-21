@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Windows.Input;
+using WpfBlankApp.App.Infrastructure;
 using WpfBlankApp.App.Models;
 using WpfBlankApp.App.Services;
 
@@ -8,6 +10,14 @@ namespace WpfBlankApp.App.ViewModels;
 
 public sealed class MainWindowViewModel : ViewModelBase
 {
+    private static readonly IReadOnlyList<(string GroupTitle, string[] PageTitles)> NavigationGroupDefinitions =
+    [
+        ("Overview", ["Home"]),
+        ("Workspace", ["Data View", "Edit", "Bulk Update", "Sync / Refresh"]),
+        ("Administration", ["Connection Manager", "Settings", "Saved Profiles", "Logs / History"]),
+        ("Help", ["About"]),
+    ];
+
     private readonly IActivityLogService _activityLogService;
     private readonly SavedProfilesPageViewModel _savedProfilesPageViewModel;
     private readonly SettingsPageViewModel _settingsPageViewModel;
@@ -53,6 +63,14 @@ public sealed class MainWindowViewModel : ViewModelBase
         ]);
 
         NavigationItems = new ObservableCollection<NavigationItem>();
+        NavigationMenuGroups = new ObservableCollection<NavigationMenuGroup>();
+        SelectNavigationItemCommand = new RelayCommand(parameter =>
+        {
+            if (parameter is NavigationItem item)
+            {
+                SelectedNavigationItem = item;
+            }
+        });
         RefreshNavigationItems();
         _currentPage = NavigationItems.First().ViewModel;
         SelectedNavigationItem = NavigationItems.First();
@@ -65,6 +83,10 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     public ObservableCollection<NavigationItem> NavigationItems { get; }
 
+    public ObservableCollection<NavigationMenuGroup> NavigationMenuGroups { get; }
+
+    public ICommand SelectNavigationItemCommand { get; }
+
     public NavigationItem? SelectedNavigationItem
     {
         get => _selectedNavigationItem;
@@ -73,6 +95,7 @@ public sealed class MainWindowViewModel : ViewModelBase
             if (SetProperty(ref _selectedNavigationItem, value) && value is not null)
             {
                 CurrentPage = value.ViewModel;
+                UpdateNavigationSelection();
             }
         }
     }
@@ -134,6 +157,21 @@ public sealed class MainWindowViewModel : ViewModelBase
         {
             NavigationItems.Add(_allNavigationItems.First());
         }
+
+        NavigationMenuGroups.Clear();
+        foreach (var (groupTitle, pageTitles) in NavigationGroupDefinitions)
+        {
+            var items = NavigationItems
+                .Where(item => pageTitles.Contains(item.Title, StringComparer.OrdinalIgnoreCase))
+                .ToArray();
+
+            if (items.Length > 0)
+            {
+                NavigationMenuGroups.Add(new NavigationMenuGroup(groupTitle, items));
+            }
+        }
+
+        UpdateNavigationSelection();
     }
 
     private void SelectPage(string pageTitle)
@@ -143,6 +181,19 @@ public sealed class MainWindowViewModel : ViewModelBase
         if (item is not null)
         {
             SelectedNavigationItem = item;
+        }
+    }
+
+    private void UpdateNavigationSelection()
+    {
+        foreach (var item in _allNavigationItems)
+        {
+            item.IsSelected = ReferenceEquals(item, SelectedNavigationItem);
+        }
+
+        foreach (var group in NavigationMenuGroups)
+        {
+            group.UpdateSelectionState();
         }
     }
 }

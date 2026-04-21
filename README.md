@@ -4,7 +4,7 @@ Reusable WPF shell template for internal business applications that need a stand
 
 ## Included template areas
 
-- Shell-style main window with left navigation and shared page host
+- Shell-style main window with WpfWebStyle-inspired top navigation and shared page host
 - Home, Data View, Edit, Bulk Update, Sync / Refresh, Connection Manager, Settings, Saved Profiles, Logs / History, and About pages
 - Mock connection manager with test actions for SSO-oriented endpoints
 - Shared data workspace with sample records, search/filter/sort/paging, detail view, edit form, bulk update preview, and sync placeholders

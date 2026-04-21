@@ -1,9 +1,12 @@
+using WpfBlankApp.App.Infrastructure;
 using WpfBlankApp.App.ViewModels;
 
 namespace WpfBlankApp.App.Models;
 
-public sealed class NavigationItem
+public sealed class NavigationItem : ObservableObject
 {
+    private bool _isSelected;
+
     public NavigationItem(string title, string icon, PageViewModelBase viewModel, bool isAdvanced = false, bool requiresAdministrator = false)
     {
         Title = title;
@@ -22,4 +25,10 @@ public sealed class NavigationItem
     public bool IsAdvanced { get; }
 
     public bool RequiresAdministrator { get; }
+
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
 }
