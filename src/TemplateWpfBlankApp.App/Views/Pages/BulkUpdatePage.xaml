@@ -8,32 +8,89 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="12" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="12" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <Border Style="{StaticResource CardBorderStyle}" Margin="0">
-            <DockPanel>
-                <Button DockPanel.Dock="Right" Padding="14,8" Command="{Binding GeneratePreviewCommand}" Content="Generate Preview" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
                 <StackPanel>
-                    <TextBlock FontWeight="SemiBold" Text="Preview-first bulk update pipeline" />
-                    <TextBlock Foreground="{StaticResource SubtleTextBrush}" Text="Template for CSV/Excel driven batch operations with validation before commit." />
+                    <TextBlock FontWeight="SemiBold" Text="Upload / stage file" />
+                    <TextBox Margin="0,8,0,0" Text="{Binding SelectedFilePath, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Margin="0,8,0,0" Foreground="{StaticResource SubtleTextBrush}" Text="{Binding MappingSummary}" TextWrapping="Wrap" />
                 </StackPanel>
-            </DockPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                    <Button Margin="0,0,8,0" Padding="14,8" Command="{Binding UseSampleFileCommand}" Content="Use Sample CSV" />
+                    <Button Margin="0,0,8,0" Padding="14,8" Command="{Binding GeneratePreviewCommand}" Content="Generate Preview" />
+                    <Button Margin="0,0,8,0" Padding="14,8" Command="{Binding ExecuteCommand}" Content="Execute" />
+                    <Button Padding="14,8" Command="{Binding RetryFailuresCommand}" Content="Retry Failures" />
+                </StackPanel>
+            </Grid>
         </Border>
 
-        <Border Grid.Row="2" Style="{StaticResource CardBorderStyle}" Margin="0">
-            <DataGrid ItemsSource="{Binding PreviewRows}"
-                      AutoGenerateColumns="False"
-                      CanUserAddRows="False"
-                      IsReadOnly="True">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="60" />
-                    <DataGridTextColumn Header="Item" Binding="{Binding ItemTitle}" Width="2*" />
-                    <DataGridTextColumn Header="Action" Binding="{Binding ProposedAction}" Width="2*" />
-                    <DataGridTextColumn Header="Validation" Binding="{Binding ValidationStatus}" Width="*" />
-                    <DataGridTextColumn Header="Notes" Binding="{Binding Notes}" Width="2*" />
-                </DataGrid.Columns>
-            </DataGrid>
+        <UniformGrid Grid.Row="2" Columns="4">
+            <Border Margin="0,0,8,0" Padding="12" Background="#FFE9F2FB" CornerRadius="8">
+                <StackPanel>
+                    <TextBlock FontWeight="SemiBold" Text="Valid" />
+                    <TextBlock FontSize="24" Text="{Binding ValidCount}" />
+                </StackPanel>
+            </Border>
+            <Border Margin="0,0,8,0" Padding="12" Background="#FFFFF4D9" CornerRadius="8">
+                <StackPanel>
+                    <TextBlock FontWeight="SemiBold" Text="Warnings" />
+                    <TextBlock FontSize="24" Text="{Binding WarningCount}" />
+                </StackPanel>
+            </Border>
+            <Border Margin="0,0,8,0" Padding="12" Background="#FFFDE7E9" CornerRadius="8">
+                <StackPanel>
+                    <TextBlock FontWeight="SemiBold" Text="Errors" />
+                    <TextBlock FontSize="24" Text="{Binding ErrorCount}" />
+                </StackPanel>
+            </Border>
+            <Border Padding="12" Background="#FFF2F6FB" CornerRadius="8">
+                <StackPanel>
+                    <TextBlock FontWeight="SemiBold" Text="Admin execution" />
+                    <TextBlock Text="{Binding IsAdministrator}" />
+                </StackPanel>
+            </Border>
+        </UniformGrid>
+
+        <Border Grid.Row="4" Style="{StaticResource CardBorderStyle}" Margin="0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <StackPanel>
+                    <TextBlock FontWeight="SemiBold" Text="{Binding ExecutionMessage}" TextWrapping="Wrap" />
+                    <TextBlock Margin="0,6,0,0"
+                               Foreground="{StaticResource SubtleTextBrush}"
+                               Text="{Binding ExecutionConfirmationRequested, StringFormat=Execution confirmation requested: {0}}" />
+                </StackPanel>
+
+                <DataGrid Grid.Row="2"
+                          ItemsSource="{Binding PreviewRows}"
+                          AutoGenerateColumns="False"
+                          CanUserAddRows="False"
+                          IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" />
+                        <DataGridTextColumn Header="Item" Binding="{Binding ItemTitle}" Width="2*" />
+                        <DataGridTextColumn Header="Action" Binding="{Binding ProposedAction}" Width="*" />
+                        <DataGridTextColumn Header="Original" Binding="{Binding OriginalValue}" Width="*" />
+                        <DataGridTextColumn Header="Updated" Binding="{Binding UpdatedValue}" Width="*" />
+                        <DataGridTextColumn Header="Validation" Binding="{Binding ValidationStatus}" Width="120" />
+                        <DataGridCheckBoxColumn Header="Retry" Binding="{Binding CanRetry}" Width="80" />
+                        <DataGridTextColumn Header="Notes" Binding="{Binding Notes}" Width="2*" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
         </Border>
     </Grid>
 </UserControl>

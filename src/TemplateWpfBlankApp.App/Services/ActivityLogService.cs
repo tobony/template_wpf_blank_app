@@ -9,11 +9,12 @@ public sealed class ActivityLogService : IActivityLogService
 {
     public ObservableCollection<ActivityLogEntry> Entries { get; } = new();
 
-    public void Add(string category, string message, string detail = "")
+    public void Add(string category, string message, string detail = "", string severity = "Information")
     {
         Entries.Insert(0, new ActivityLogEntry
         {
             Timestamp = DateTimeOffset.Now,
+            Severity = severity,
             Category = category,
             Message = message,
             Detail = detail,

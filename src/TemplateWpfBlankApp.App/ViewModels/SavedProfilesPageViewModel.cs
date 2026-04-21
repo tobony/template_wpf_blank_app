@@ -13,10 +13,10 @@ public sealed class SavedProfilesPageViewModel : PageViewModelBase
     private readonly AppProfile _currentProfile;
     private readonly IProfileStore _profileStore;
     private string _newProfileName = string.Empty;
-    private string? _selectedProfileName;
+    private AppProfile? _selectedProfile;
 
     public SavedProfilesPageViewModel(AppProfile currentProfile, IProfileStore profileStore, IConnectionService connectionService, IActivityLogService activityLogService)
-        : base("Saved Profiles", "Store reusable environment and connection combinations for different tasks.")
+        : base("Saved Profiles", "Store reusable task-specific profiles, favorites, and recent combinations.")
     {
         _currentProfile = currentProfile;
         _profileStore = profileStore;
@@ -24,11 +24,12 @@ public sealed class SavedProfilesPageViewModel : PageViewModelBase
         _activityLogService = activityLogService;
         RefreshCommand = new AsyncRelayCommand(RefreshProfilesAsync);
         SaveAsCommand = new AsyncRelayCommand(SaveAsAsync, () => !string.IsNullOrWhiteSpace(NewProfileName));
-        LoadCommand = new AsyncRelayCommand(LoadSelectedAsync, () => !string.IsNullOrWhiteSpace(SelectedProfileName));
-        DeleteCommand = new AsyncRelayCommand(DeleteSelectedAsync, () => !string.IsNullOrWhiteSpace(SelectedProfileName));
+        LoadCommand = new AsyncRelayCommand(LoadSelectedAsync, () => SelectedProfile is not null);
+        DeleteCommand = new AsyncRelayCommand(DeleteSelectedAsync, () => SelectedProfile is not null);
+        SetFavoriteCommand = new AsyncRelayCommand(SetFavoriteAsync, () => SelectedProfile is not null);
     }
 
-    public ObservableCollection<string> Profiles { get; } = new();
+    public ObservableCollection<AppProfile> Profiles { get; } = new();
 
     public string NewProfileName
     {
@@ -42,25 +43,23 @@ public sealed class SavedProfilesPageViewModel : PageViewModelBase
         }
     }
 
-    public string? SelectedProfileName
+    public AppProfile? SelectedProfile
     {
-        get => _selectedProfileName;
+        get => _selectedProfile;
         set
         {
-            if (SetProperty(ref _selectedProfileName, value))
+            if (SetProperty(ref _selectedProfile, value))
             {
-                if (LoadCommand is AsyncRelayCommand loadCommand)
-                {
-                    loadCommand.RaiseCanExecuteChanged();
-                }
-
-                if (DeleteCommand is AsyncRelayCommand deleteCommand)
-                {
-                    deleteCommand.RaiseCanExecuteChanged();
-                }
+                RaiseCommandStateChanged();
+                OnPropertyChanged(nameof(RecentProfiles));
             }
         }
     }
+
+    public IEnumerable<AppProfile> RecentProfiles => Profiles
+        .Where(profile => profile.LastUsedAt is not null)
+        .OrderByDescending(profile => profile.LastUsedAt)
+        .Take(3);
 
     public ICommand RefreshCommand { get; }
 
@@ -70,25 +69,26 @@ public sealed class SavedProfilesPageViewModel : PageViewModelBase
 
     public ICommand DeleteCommand { get; }
 
+    public ICommand SetFavoriteCommand { get; }
+
     public async Task RefreshProfilesAsync()
     {
         Profiles.Clear();
         var names = await _profileStore.GetProfileNamesAsync();
         foreach (var name in names)
         {
-            Profiles.Add(name);
+            var profile = await _profileStore.LoadAsync(name);
+            if (profile is not null)
+            {
+                Profiles.Add(profile);
+            }
         }
 
-        var nextSelection = !string.IsNullOrWhiteSpace(SelectedProfileName) && Profiles.Contains(SelectedProfileName)
-            ? SelectedProfileName
+        SelectedProfile = SelectedProfile is not null
+            ? Profiles.FirstOrDefault(profile => string.Equals(profile.ProfileName, SelectedProfile.ProfileName, StringComparison.OrdinalIgnoreCase))
             : Profiles.FirstOrDefault();
 
-        SelectedProfileName = nextSelection;
-        if (nextSelection is null)
-        {
-            OnPropertyChanged(nameof(SelectedProfileName));
-        }
-
+        OnPropertyChanged(nameof(RecentProfiles));
         _activityLogService.Add("Profiles", "Refreshed saved profile list.", $"Profiles available: {Profiles.Count}");
     }
 
@@ -96,6 +96,7 @@ public sealed class SavedProfilesPageViewModel : PageViewModelBase
     {
         var snapshot = _currentProfile.Clone();
         snapshot.ProfileName = NewProfileName.Trim();
+        snapshot.LastUsedAt = DateTimeOffset.Now;
         snapshot.Connections = new ObservableCollection<ConnectionDefinition>(_connectionService.CreateSnapshot().Select(connection => connection.Clone()));
         await _profileStore.SaveAsync(snapshot);
         _activityLogService.Add("Profiles", $"Saved profile '{snapshot.ProfileName}'.");
@@ -105,35 +106,73 @@ public sealed class SavedProfilesPageViewModel : PageViewModelBase
 
     private async Task LoadSelectedAsync()
     {
-        if (string.IsNullOrWhiteSpace(SelectedProfileName))
+        if (SelectedProfile is null)
         {
             return;
         }
 
-        var profile = await _profileStore.LoadAsync(SelectedProfileName);
+        var profile = await _profileStore.LoadAsync(SelectedProfile.ProfileName);
         if (profile is null)
         {
-            _activityLogService.Add("Profiles", $"Profile '{SelectedProfileName}' was not found.");
+            _activityLogService.Add("Profiles", $"Profile '{SelectedProfile.ProfileName}' was not found.", string.Empty, "Warning");
             await RefreshProfilesAsync();
             return;
         }
 
+        profile.LastUsedAt = DateTimeOffset.Now;
         _currentProfile.CopyFrom(profile);
         _connectionService.ApplySnapshot(profile.Connections);
-        _activityLogService.Add("Profiles", $"Loaded profile '{SelectedProfileName}'.");
+        await _profileStore.SaveAsync(profile);
+        _activityLogService.Add("Profiles", $"Loaded profile '{profile.ProfileName}'.");
+        await RefreshProfilesAsync();
     }
 
     private async Task DeleteSelectedAsync()
     {
-        if (string.IsNullOrWhiteSpace(SelectedProfileName))
+        if (SelectedProfile is null)
         {
             return;
         }
 
-        var deletedProfile = SelectedProfileName;
+        var deletedProfile = SelectedProfile.ProfileName;
         await _profileStore.DeleteAsync(deletedProfile);
         _activityLogService.Add("Profiles", $"Deleted profile '{deletedProfile}'.");
-        SelectedProfileName = null;
+        SelectedProfile = null;
         await RefreshProfilesAsync();
+    }
+
+    private async Task SetFavoriteAsync()
+    {
+        if (SelectedProfile is null)
+        {
+            return;
+        }
+
+        foreach (var profile in Profiles)
+        {
+            profile.IsFavorite = string.Equals(profile.ProfileName, SelectedProfile.ProfileName, StringComparison.OrdinalIgnoreCase);
+            await _profileStore.SaveAsync(profile);
+        }
+
+        _activityLogService.Add("Profiles", $"Marked '{SelectedProfile.ProfileName}' as the favorite profile.");
+        await RefreshProfilesAsync();
+    }
+
+    private void RaiseCommandStateChanged()
+    {
+        if (LoadCommand is AsyncRelayCommand loadCommand)
+        {
+            loadCommand.RaiseCanExecuteChanged();
+        }
+
+        if (DeleteCommand is AsyncRelayCommand deleteCommand)
+        {
+            deleteCommand.RaiseCanExecuteChanged();
+        }
+
+        if (SetFavoriteCommand is AsyncRelayCommand setFavoriteCommand)
+        {
+            setFavoriteCommand.RaiseCanExecuteChanged();
+        }
     }
 }

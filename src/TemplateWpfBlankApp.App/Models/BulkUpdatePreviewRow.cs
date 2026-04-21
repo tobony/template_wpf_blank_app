@@ -8,7 +8,13 @@ public sealed class BulkUpdatePreviewRow
 
     public string ProposedAction { get; init; } = string.Empty;
 
+    public string OriginalValue { get; init; } = string.Empty;
+
+    public string UpdatedValue { get; init; } = string.Empty;
+
     public string ValidationStatus { get; init; } = string.Empty;
+
+    public bool CanRetry { get; init; }
 
     public string Notes { get; init; } = string.Empty;
 }

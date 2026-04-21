@@ -12,6 +12,9 @@ public sealed class WorkItem : ObservableObject
     private string _notes = string.Empty;
     private DateTimeOffset _lastUpdated;
     private bool _isReadOnly;
+    private bool _isActive = true;
+    private string _lastSyncResult = "Not synced yet";
+    private DateTimeOffset? _serverLastSyncedAt;
 
     public int Id
     {
@@ -61,6 +64,24 @@ public sealed class WorkItem : ObservableObject
         set => SetProperty(ref _isReadOnly, value);
     }
 
+    public bool IsActive
+    {
+        get => _isActive;
+        set => SetProperty(ref _isActive, value);
+    }
+
+    public string LastSyncResult
+    {
+        get => _lastSyncResult;
+        set => SetProperty(ref _lastSyncResult, value);
+    }
+
+    public DateTimeOffset? ServerLastSyncedAt
+    {
+        get => _serverLastSyncedAt;
+        set => SetProperty(ref _serverLastSyncedAt, value);
+    }
+
     public WorkItem Clone()
     {
         return new WorkItem
@@ -73,6 +94,9 @@ public sealed class WorkItem : ObservableObject
             Notes = Notes,
             LastUpdated = LastUpdated,
             IsReadOnly = IsReadOnly,
+            IsActive = IsActive,
+            LastSyncResult = LastSyncResult,
+            ServerLastSyncedAt = ServerLastSyncedAt,
         };
     }
 
@@ -86,5 +110,8 @@ public sealed class WorkItem : ObservableObject
         Notes = other.Notes;
         LastUpdated = other.LastUpdated;
         IsReadOnly = other.IsReadOnly;
+        IsActive = other.IsActive;
+        LastSyncResult = other.LastSyncResult;
+        ServerLastSyncedAt = other.ServerLastSyncedAt;
     }
 }

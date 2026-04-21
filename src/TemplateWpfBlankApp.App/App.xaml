@@ -36,6 +36,9 @@
         <DataTemplate DataType="{x:Type viewModels:BulkUpdatePageViewModel}">
             <views:BulkUpdatePage />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModels:SyncRefreshPageViewModel}">
+            <views:SyncRefreshPage />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type viewModels:ConnectionsPageViewModel}">
             <views:ConnectionsPage />
         </DataTemplate>

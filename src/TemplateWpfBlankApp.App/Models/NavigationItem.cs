@@ -4,11 +4,13 @@ namespace TemplateWpfBlankApp.App.Models;
 
 public sealed class NavigationItem
 {
-    public NavigationItem(string title, string icon, PageViewModelBase viewModel)
+    public NavigationItem(string title, string icon, PageViewModelBase viewModel, bool isAdvanced = false, bool requiresAdministrator = false)
     {
         Title = title;
         Icon = icon;
         ViewModel = viewModel;
+        IsAdvanced = isAdvanced;
+        RequiresAdministrator = requiresAdministrator;
     }
 
     public string Title { get; }
@@ -16,4 +18,8 @@ public sealed class NavigationItem
     public string Icon { get; }
 
     public PageViewModelBase ViewModel { get; }
+
+    public bool IsAdvanced { get; }
+
+    public bool RequiresAdministrator { get; }
 }

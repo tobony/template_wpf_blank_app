@@ -24,29 +24,39 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="12" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="12" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="12" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <TextBlock FontWeight="SemiBold" Text="Profile name" />
                     <TextBox Grid.Column="1" Text="{Binding Profile.ProfileName, UpdateSourceTrigger=PropertyChanged}" />
 
                     <TextBlock Grid.Row="2" FontWeight="SemiBold" Text="Environment" />
-                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Profile.EnvironmentName, UpdateSourceTrigger=PropertyChanged}" />
+                    <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding EnvironmentOptions}" SelectedItem="{Binding Profile.EnvironmentName}" />
 
-                    <TextBlock Grid.Row="4" FontWeight="SemiBold" Text="User alias" />
-                    <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Profile.UserAlias, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Grid.Row="4" FontWeight="SemiBold" Text="Default page" />
+                    <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding DefaultPageOptions}" SelectedItem="{Binding Profile.DefaultPage}" />
 
-                    <TextBlock Grid.Row="6" FontWeight="SemiBold" Text="Default page" />
-                    <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding Profile.DefaultPage, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Grid.Row="6" FontWeight="SemiBold" Text="Default status filter" />
+                    <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding Profile.DefaultStatusFilter, UpdateSourceTrigger=PropertyChanged}" />
 
-                    <TextBlock Grid.Row="8" FontWeight="SemiBold" Text="Log level" />
-                    <TextBox Grid.Row="8" Grid.Column="1" Text="{Binding Profile.LogLevel, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Grid.Row="8" FontWeight="SemiBold" Text="Default owner filter" />
+                    <TextBox Grid.Row="8" Grid.Column="1" Text="{Binding Profile.DefaultOwnerFilter, UpdateSourceTrigger=PropertyChanged}" />
 
-                    <StackPanel Grid.Row="10" Grid.ColumnSpan="2">
+                    <TextBlock Grid.Row="10" FontWeight="SemiBold" Text="Request timeout (sec)" />
+                    <TextBox Grid.Row="10" Grid.Column="1" Text="{Binding Profile.RequestTimeoutSeconds, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock Grid.Row="12" FontWeight="SemiBold" Text="Log level" />
+                    <ComboBox Grid.Row="12" Grid.Column="1" ItemsSource="{Binding LogLevelOptions}" SelectedItem="{Binding Profile.LogLevel}" />
+
+                    <StackPanel Grid.Row="14" Grid.ColumnSpan="2">
                         <TextBlock FontWeight="SemiBold" Text="Visible columns" />
                         <TextBox Margin="0,8,0,0" Text="{Binding Profile.VisibleColumns, UpdateSourceTrigger=PropertyChanged}" />
                         <CheckBox Margin="0,12,0,0" Content="Default to read-only mode" IsChecked="{Binding Profile.UseReadOnlyMode}" />
-                        <TextBlock Margin="0,14,0,0" Foreground="{StaticResource SubtleTextBrush}" TextWrapping="Wrap"
-                                   Text="The current profile snapshot is stored as JSON so each internal app can ship sensible defaults and let users keep environment-specific variations." />
+                        <CheckBox Margin="0,8,0,0" Content="Show advanced navigation pages" IsChecked="{Binding Profile.ShowAdvancedPages}" />
+                        <CheckBox Margin="0,8,0,0" Content="Administrator mode" IsChecked="{Binding Profile.IsAdministrator}" />
                     </StackPanel>
                 </Grid>
             </Border>

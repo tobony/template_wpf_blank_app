@@ -7,21 +7,23 @@
     <StackPanel>
         <Border Style="{StaticResource CardBorderStyle}">
             <StackPanel>
-                <TextBlock FontSize="20" FontWeight="SemiBold" Text="Template metadata" />
+                <TextBlock FontSize="20" FontWeight="SemiBold" Text="Application metadata" />
                 <TextBlock Margin="0,12,0,0" Text="Version" FontWeight="SemiBold" />
                 <TextBlock Text="{Binding Version}" />
+                <TextBlock Margin="0,12,0,0" Text="Build info" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding BuildInformation}" />
+                <TextBlock Margin="0,12,0,0" Text="Deployment channel" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding DeploymentChannel}" />
                 <TextBlock Margin="0,12,0,0" Text="Support contact" FontWeight="SemiBold" />
                 <TextBlock Text="{Binding SupportContact}" />
-                <TextBlock Margin="0,12,0,0" Text="Deployment model" FontWeight="SemiBold" />
-                <TextBlock TextWrapping="Wrap" Text="{Binding DeploymentModel}" />
             </StackPanel>
         </Border>
 
         <Border Style="{StaticResource CardBorderStyle}">
             <StackPanel>
-                <TextBlock FontSize="20" FontWeight="SemiBold" Text="Recommended extension points" />
-                <TextBlock Margin="0,12,0,0" TextWrapping="Wrap"
-                           Text="Replace the mock connection and workspace services with business-specific adapters for SQL, SharePoint, Microsoft Graph, or Power BI. Keep the shell, settings, and logging infrastructure as shared building blocks across internal apps." />
+                <TextBlock FontSize="20" FontWeight="SemiBold" Text="Licensing / open source" />
+                <TextBlock Margin="0,12,0,0" TextWrapping="Wrap" Text="{Binding LicenseNotice}" />
+                <TextBlock Margin="0,12,0,0" TextWrapping="Wrap" Text="{Binding OpenSourceNotice}" />
             </StackPanel>
         </Border>
     </StackPanel>

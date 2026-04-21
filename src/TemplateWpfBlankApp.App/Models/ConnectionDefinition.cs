@@ -8,9 +8,12 @@ public sealed class ConnectionDefinition : ObservableObject
     private string _systemType = string.Empty;
     private string _endpoint = string.Empty;
     private string _authentication = string.Empty;
+    private string _authenticationStatus = "Not authenticated";
+    private DateTimeOffset? _authenticationExpiresAt;
     private ConnectionState _status;
     private DateTimeOffset? _lastChecked;
     private string _notes = string.Empty;
+    private bool _isAdminManaged;
 
     public string Name
     {
@@ -36,6 +39,18 @@ public sealed class ConnectionDefinition : ObservableObject
         set => SetProperty(ref _authentication, value);
     }
 
+    public string AuthenticationStatus
+    {
+        get => _authenticationStatus;
+        set => SetProperty(ref _authenticationStatus, value);
+    }
+
+    public DateTimeOffset? AuthenticationExpiresAt
+    {
+        get => _authenticationExpiresAt;
+        set => SetProperty(ref _authenticationExpiresAt, value);
+    }
+
     public ConnectionState Status
     {
         get => _status;
@@ -54,6 +69,12 @@ public sealed class ConnectionDefinition : ObservableObject
         set => SetProperty(ref _notes, value);
     }
 
+    public bool IsAdminManaged
+    {
+        get => _isAdminManaged;
+        set => SetProperty(ref _isAdminManaged, value);
+    }
+
     public ConnectionDefinition Clone()
     {
         return new ConnectionDefinition
@@ -62,9 +83,12 @@ public sealed class ConnectionDefinition : ObservableObject
             SystemType = SystemType,
             Endpoint = Endpoint,
             Authentication = Authentication,
+            AuthenticationStatus = AuthenticationStatus,
+            AuthenticationExpiresAt = AuthenticationExpiresAt,
             Status = Status,
             LastChecked = LastChecked,
             Notes = Notes,
+            IsAdminManaged = IsAdminManaged,
         };
     }
 }

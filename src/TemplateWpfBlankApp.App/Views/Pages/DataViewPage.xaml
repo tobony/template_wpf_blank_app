@@ -9,18 +9,31 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="12" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="12" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Border Style="{StaticResource CardBorderStyle}" Margin="0">
-            <DockPanel>
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                    <Button Padding="14,8" Command="{Binding RefreshCommand}" Content="Refresh" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox Margin="0,0,12,0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                <ComboBox Grid.Column="1" Margin="0,0,12,0" ItemsSource="{Binding StatusOptions}" SelectedItem="{Binding SelectedStatus}" />
+                <ComboBox Grid.Column="2" Margin="0,0,12,0" ItemsSource="{Binding OwnerOptions}" SelectedItem="{Binding SelectedOwner}" />
+                <ComboBox Grid.Column="3" Margin="0,0,12,0" ItemsSource="{Binding SystemOptions}" SelectedItem="{Binding SelectedSystem}" />
+                <ComboBox Grid.Column="4" Margin="0,0,12,0" ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SelectedSort}" />
+                <StackPanel Grid.Column="5" Orientation="Horizontal">
+                    <Button Margin="0,0,8,0" Padding="14,8" Command="{Binding RefreshCommand}" Content="Refresh" />
+                    <Button Margin="0,0,8,0" Padding="14,8" Command="{Binding ExportCommand}" Content="Export" />
+                    <Button Padding="14,8" Command="{Binding OpenDetailCommand}" Content="Open Detail" />
                 </StackPanel>
-                <StackPanel>
-                    <TextBlock FontWeight="SemiBold" Text="Shared table view" />
-                    <TextBlock Foreground="{StaticResource SubtleTextBrush}" Text="Select a row to reuse it in the Edit page." />
-                </StackPanel>
-            </DockPanel>
+            </Grid>
         </Border>
 
         <Grid Grid.Row="2">
@@ -31,26 +44,26 @@
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}" Margin="0">
-                <DataGrid ItemsSource="{Binding Items}"
+                <DataGrid ItemsSource="{Binding VisibleItems}"
                           SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
                           AutoGenerateColumns="False"
                           CanUserAddRows="False"
                           IsReadOnly="True"
                           HeadersVisibility="Column">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="90" />
+                        <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="80" />
                         <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="2*" />
                         <DataGridTextColumn Header="Source" Binding="{Binding SourceSystem}" Width="*" />
                         <DataGridTextColumn Header="Owner" Binding="{Binding Owner}" Width="*" />
                         <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="*" />
-                        <DataGridTextColumn Header="Updated" Binding="{Binding LastUpdated, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Width="160" />
+                        <DataGridTextColumn Header="Updated" Binding="{Binding LastUpdated, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Width="150" />
                     </DataGrid.Columns>
                 </DataGrid>
             </Border>
 
             <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}" Margin="0">
                 <StackPanel>
-                    <TextBlock FontSize="18" FontWeight="SemiBold" Text="Selected item" />
+                    <TextBlock FontSize="18" FontWeight="SemiBold" Text="Selected item detail" />
                     <TextBlock Margin="0,12,0,0" FontWeight="SemiBold" Text="{Binding SelectedItem.Title, TargetNullValue=Select a row}" />
                     <TextBlock Foreground="{StaticResource SubtleTextBrush}" Text="{Binding SelectedItem.SourceSystem}" />
                     <TextBlock Margin="0,12,0,0" TextWrapping="Wrap" Text="{Binding SelectedItem.Notes}" />
@@ -58,10 +71,22 @@
                     <TextBlock Text="{Binding SelectedItem.Owner}" />
                     <TextBlock Margin="0,12,0,0" FontWeight="SemiBold" Text="Status" />
                     <TextBlock Text="{Binding SelectedItem.Status}" />
+                    <TextBlock Margin="0,12,0,0" FontWeight="SemiBold" Text="Sync state" />
+                    <TextBlock Text="{Binding SelectedItem.LastSyncResult}" />
                     <TextBlock Margin="0,12,0,0" FontWeight="SemiBold" Text="Read-only" />
                     <TextBlock Text="{Binding SelectedItem.IsReadOnly}" />
                 </StackPanel>
             </Border>
         </Grid>
+
+        <Border Grid.Row="4" Style="{StaticResource CardBorderStyle}" Margin="0">
+            <DockPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                    <Button Margin="0,0,8,0" Padding="14,8" Command="{Binding PreviousPageCommand}" Content="Previous" />
+                    <Button Padding="14,8" Command="{Binding NextPageCommand}" Content="Next" />
+                </StackPanel>
+                <TextBlock VerticalAlignment="Center" Text="{Binding PageSummary}" />
+            </DockPanel>
+        </Border>
     </Grid>
 </UserControl>

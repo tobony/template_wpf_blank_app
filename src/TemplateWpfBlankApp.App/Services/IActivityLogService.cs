@@ -7,7 +7,7 @@ public interface IActivityLogService
 {
     ObservableCollection<ActivityLogEntry> Entries { get; }
 
-    void Add(string category, string message, string detail = "");
+    void Add(string category, string message, string detail = "", string severity = "Information");
 
     void Clear();
 

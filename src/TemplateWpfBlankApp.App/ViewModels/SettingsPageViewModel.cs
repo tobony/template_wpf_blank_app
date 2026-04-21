@@ -13,7 +13,7 @@ public sealed class SettingsPageViewModel : PageViewModelBase
     private readonly IProfileStore _profileStore;
 
     public SettingsPageViewModel(AppProfile profile, IProfileStore profileStore, IConnectionService connectionService, IActivityLogService activityLogService)
-        : base("Settings", "Manage environment defaults, user preferences, and current profile persistence.")
+        : base("Settings", "Manage environment defaults, filters, columns, timeouts, and template behavior.")
     {
         Profile = profile;
         _profileStore = profileStore;
@@ -29,6 +29,12 @@ public sealed class SettingsPageViewModel : PageViewModelBase
     public ObservableCollection<ConnectionDefinition> CurrentConnections => _connectionService.Connections;
 
     public string StorageFolderPath => _profileStore.StorageFolderPath;
+
+    public IReadOnlyList<string> EnvironmentOptions => ["Test", "Production"];
+
+    public IReadOnlyList<string> DefaultPageOptions => ["Home", "Data View", "Edit", "Settings", "Connection Manager", "Logs / History"];
+
+    public IReadOnlyList<string> LogLevelOptions => ["Information", "Warning", "Error"];
 
     public ICommand SaveCurrentCommand { get; }
 
@@ -48,6 +54,7 @@ public sealed class SettingsPageViewModel : PageViewModelBase
     private async Task SaveCurrentAsync()
     {
         SyncConnectionsIntoProfile();
+        Profile.LastUsedAt = DateTimeOffset.Now;
         await _profileStore.SaveAsync(Profile);
         _activityLogService.Add("Settings", $"Saved profile '{Profile.ProfileName}'.", _profileStore.StorageFolderPath);
     }
@@ -57,11 +64,12 @@ public sealed class SettingsPageViewModel : PageViewModelBase
         var loaded = await _profileStore.LoadAsync(Profile.ProfileName);
         if (loaded is null)
         {
-            _activityLogService.Add("Settings", $"Profile '{Profile.ProfileName}' was not found.", "Using the in-memory template configuration.");
+            _activityLogService.Add("Settings", $"Profile '{Profile.ProfileName}' was not found.", "Using the in-memory template configuration.", "Warning");
             return;
         }
 
         Profile.CopyFrom(loaded);
+        Profile.LastUsedAt = DateTimeOffset.Now;
         _connectionService.ApplySnapshot(Profile.Connections);
         _activityLogService.Add("Settings", $"Loaded profile '{Profile.ProfileName}'.");
         OnPropertyChanged(nameof(CurrentConnections));

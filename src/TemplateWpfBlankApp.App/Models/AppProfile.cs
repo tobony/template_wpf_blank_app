@@ -12,6 +12,13 @@ public sealed class AppProfile : ObservableObject
     private string _logLevel = "Information";
     private string _visibleColumns = "Id,Title,SourceSystem,Owner,Status,LastUpdated";
     private bool _useReadOnlyMode;
+    private bool _showAdvancedPages;
+    private bool _isAdministrator;
+    private string _defaultStatusFilter = "All";
+    private string _defaultOwnerFilter = "All";
+    private int _requestTimeoutSeconds = 30;
+    private bool _isFavorite;
+    private DateTimeOffset? _lastUsedAt = DateTimeOffset.Now;
     private ObservableCollection<ConnectionDefinition> _connections = new();
 
     public string ProfileName
@@ -56,6 +63,48 @@ public sealed class AppProfile : ObservableObject
         set => SetProperty(ref _useReadOnlyMode, value);
     }
 
+    public bool ShowAdvancedPages
+    {
+        get => _showAdvancedPages;
+        set => SetProperty(ref _showAdvancedPages, value);
+    }
+
+    public bool IsAdministrator
+    {
+        get => _isAdministrator;
+        set => SetProperty(ref _isAdministrator, value);
+    }
+
+    public string DefaultStatusFilter
+    {
+        get => _defaultStatusFilter;
+        set => SetProperty(ref _defaultStatusFilter, value);
+    }
+
+    public string DefaultOwnerFilter
+    {
+        get => _defaultOwnerFilter;
+        set => SetProperty(ref _defaultOwnerFilter, value);
+    }
+
+    public int RequestTimeoutSeconds
+    {
+        get => _requestTimeoutSeconds;
+        set => SetProperty(ref _requestTimeoutSeconds, value);
+    }
+
+    public bool IsFavorite
+    {
+        get => _isFavorite;
+        set => SetProperty(ref _isFavorite, value);
+    }
+
+    public DateTimeOffset? LastUsedAt
+    {
+        get => _lastUsedAt;
+        set => SetProperty(ref _lastUsedAt, value);
+    }
+
     public ObservableCollection<ConnectionDefinition> Connections
     {
         get => _connections;
@@ -73,6 +122,13 @@ public sealed class AppProfile : ObservableObject
             LogLevel = LogLevel,
             VisibleColumns = VisibleColumns,
             UseReadOnlyMode = UseReadOnlyMode,
+            ShowAdvancedPages = ShowAdvancedPages,
+            IsAdministrator = IsAdministrator,
+            DefaultStatusFilter = DefaultStatusFilter,
+            DefaultOwnerFilter = DefaultOwnerFilter,
+            RequestTimeoutSeconds = RequestTimeoutSeconds,
+            IsFavorite = IsFavorite,
+            LastUsedAt = LastUsedAt,
         };
 
         foreach (var connection in Connections)
@@ -92,6 +148,13 @@ public sealed class AppProfile : ObservableObject
         LogLevel = other.LogLevel;
         VisibleColumns = other.VisibleColumns;
         UseReadOnlyMode = other.UseReadOnlyMode;
+        ShowAdvancedPages = other.ShowAdvancedPages;
+        IsAdministrator = other.IsAdministrator;
+        DefaultStatusFilter = other.DefaultStatusFilter;
+        DefaultOwnerFilter = other.DefaultOwnerFilter;
+        RequestTimeoutSeconds = other.RequestTimeoutSeconds;
+        IsFavorite = other.IsFavorite;
+        LastUsedAt = other.LastUsedAt;
 
         Connections.Clear();
         foreach (var connection in other.Connections)
@@ -111,7 +174,10 @@ public sealed class AppProfile : ObservableObject
             SystemType = "SQL Database",
             Endpoint = "Server=sql.company.local;Database=Operations;",
             Authentication = "Integrated SSO",
+            AuthenticationStatus = "Connected",
+            AuthenticationExpiresAt = DateTimeOffset.Now.AddHours(6),
             Notes = "Template endpoint for transactional updates.",
+            IsAdminManaged = true,
         });
         profile.Connections.Add(new ConnectionDefinition
         {
@@ -119,7 +185,19 @@ public sealed class AppProfile : ObservableObject
             SystemType = "SharePoint",
             Endpoint = "https://contoso.sharepoint.com/sites/operations",
             Authentication = "Microsoft 365 SSO",
+            AuthenticationStatus = "Token expires soon",
+            AuthenticationExpiresAt = DateTimeOffset.Now.AddMinutes(45),
             Notes = "Template endpoint for documents and lists.",
+        });
+        profile.Connections.Add(new ConnectionDefinition
+        {
+            Name = "Microsoft Graph",
+            SystemType = "Microsoft Graph",
+            Endpoint = "https://graph.microsoft.com/v1.0/sites/root",
+            Authentication = "Microsoft 365 SSO",
+            AuthenticationStatus = "Connected",
+            AuthenticationExpiresAt = DateTimeOffset.Now.AddHours(2),
+            Notes = "Template endpoint for mail, Teams, and directory automation.",
         });
         profile.Connections.Add(new ConnectionDefinition
         {
@@ -127,6 +205,8 @@ public sealed class AppProfile : ObservableObject
             SystemType = "Power BI",
             Endpoint = "powerbi://api.powerbi.com/v1.0/myorg/Operations",
             Authentication = "Microsoft 365 SSO",
+            AuthenticationStatus = "Re-authentication required",
+            AuthenticationExpiresAt = null,
             Notes = "Template endpoint for semantic models and reports.",
         });
         return profile;

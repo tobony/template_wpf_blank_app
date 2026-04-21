@@ -11,6 +11,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private readonly IActivityLogService _activityLogService;
     private readonly SavedProfilesPageViewModel _savedProfilesPageViewModel;
     private readonly SettingsPageViewModel _settingsPageViewModel;
+    private readonly List<NavigationItem> _allNavigationItems = [];
     private PageViewModelBase _currentPage;
     private NavigationItem? _selectedNavigationItem;
     private string _statusMessage = "Template initialized.";
@@ -26,30 +27,34 @@ public sealed class MainWindowViewModel : ViewModelBase
         _activityLogService = activityLogService;
         Profile.PropertyChanged += ProfileOnPropertyChanged;
 
-        var homePageViewModel = new HomeViewModel(profile, activityLogService, connectionService);
-        var dataViewPageViewModel = new DataViewPageViewModel(workspaceService);
+        var homePageViewModel = new HomeViewModel(profile, activityLogService, connectionService, workspaceService, SelectPage);
+        var dataViewPageViewModel = new DataViewPageViewModel(profile, workspaceService, SelectPage);
         var editPageViewModel = new EditPageViewModel(workspaceService);
-        var bulkUpdatePageViewModel = new BulkUpdatePageViewModel(workspaceService);
-        var connectionsPageViewModel = new ConnectionsPageViewModel(connectionService, activityLogService);
+        var bulkUpdatePageViewModel = new BulkUpdatePageViewModel(profile, workspaceService);
+        var syncRefreshPageViewModel = new SyncRefreshPageViewModel(workspaceService);
+        var connectionsPageViewModel = new ConnectionsPageViewModel(profile, connectionService, activityLogService);
         _settingsPageViewModel = new SettingsPageViewModel(profile, profileStore, connectionService, activityLogService);
         _savedProfilesPageViewModel = new SavedProfilesPageViewModel(profile, profileStore, connectionService, activityLogService);
-        var logsPageViewModel = new LogsPageViewModel(activityLogService);
+        var logsPageViewModel = new LogsPageViewModel(profile, activityLogService);
         var aboutPageViewModel = new AboutPageViewModel();
 
-        NavigationItems = new ObservableCollection<NavigationItem>
-        {
-            new("Home", "⌂", homePageViewModel),
-            new("Data View", "☰", dataViewPageViewModel),
-            new("Edit", "✎", editPageViewModel),
-            new("Bulk Update", "⇪", bulkUpdatePageViewModel),
-            new("Connections", "⇄", connectionsPageViewModel),
-            new("Settings", "⚙", _settingsPageViewModel),
-            new("Saved Profiles", "★", _savedProfilesPageViewModel),
-            new("Logs", "☷", logsPageViewModel),
-            new("About", "ⓘ", aboutPageViewModel),
-        };
+        _allNavigationItems.AddRange(
+        [
+            new NavigationItem("Home", "⌂", homePageViewModel),
+            new NavigationItem("Data View", "☰", dataViewPageViewModel),
+            new NavigationItem("Edit", "✎", editPageViewModel),
+            new NavigationItem("Bulk Update", "⇪", bulkUpdatePageViewModel, isAdvanced: true),
+            new NavigationItem("Sync / Refresh", "↻", syncRefreshPageViewModel, isAdvanced: true),
+            new NavigationItem("Connection Manager", "⇄", connectionsPageViewModel),
+            new NavigationItem("Settings", "⚙", _settingsPageViewModel),
+            new NavigationItem("Saved Profiles", "★", _savedProfilesPageViewModel, isAdvanced: true),
+            new NavigationItem("Logs / History", "☷", logsPageViewModel),
+            new NavigationItem("About", "ⓘ", aboutPageViewModel),
+        ]);
 
-        _currentPage = homePageViewModel;
+        NavigationItems = new ObservableCollection<NavigationItem>();
+        RefreshNavigationItems();
+        _currentPage = NavigationItems.First().ViewModel;
         SelectedNavigationItem = NavigationItems.First();
         _activityLogService.Entries.CollectionChanged += ActivityEntriesOnCollectionChanged;
     }
@@ -108,11 +113,33 @@ public sealed class MainWindowViewModel : ViewModelBase
         {
             OnPropertyChanged(nameof(WindowTitle));
         }
+
+        if (e.PropertyName is nameof(AppProfile.ShowAdvancedPages) or nameof(AppProfile.IsAdministrator))
+        {
+            var currentPageTitle = SelectedNavigationItem?.Title ?? "Home";
+            RefreshNavigationItems();
+            SelectPage(currentPageTitle);
+        }
+    }
+
+    private void RefreshNavigationItems()
+    {
+        NavigationItems.Clear();
+        foreach (var item in _allNavigationItems.Where(item => (!item.IsAdvanced || Profile.ShowAdvancedPages) && (!item.RequiresAdministrator || Profile.IsAdministrator)))
+        {
+            NavigationItems.Add(item);
+        }
+
+        if (!NavigationItems.Any())
+        {
+            NavigationItems.Add(_allNavigationItems.First());
+        }
     }
 
     private void SelectPage(string pageTitle)
     {
-        var item = NavigationItems.FirstOrDefault(nav => string.Equals(nav.Title, pageTitle, StringComparison.OrdinalIgnoreCase));
+        var item = NavigationItems.FirstOrDefault(nav => string.Equals(nav.Title, pageTitle, StringComparison.OrdinalIgnoreCase))
+                   ?? NavigationItems.FirstOrDefault();
         if (item is not null)
         {
             SelectedNavigationItem = item;
