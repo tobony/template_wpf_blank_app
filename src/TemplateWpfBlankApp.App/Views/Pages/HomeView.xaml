@@ -30,7 +30,10 @@
                             </ItemsControl.Items>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Margin="0,4,0,0" Text="•  {Binding}" />
+                                    <TextBlock Margin="0,4,0,0">
+                                        <Run Text="•  " />
+                                        <Run Text="{Binding}" />
+                                    </TextBlock>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
