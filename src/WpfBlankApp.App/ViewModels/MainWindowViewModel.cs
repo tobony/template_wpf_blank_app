@@ -10,12 +10,12 @@ namespace WpfBlankApp.App.ViewModels;
 
 public sealed class MainWindowViewModel : ViewModelBase
 {
-    private static readonly IReadOnlyList<(string GroupTitle, string[] PageTitles)> NavigationGroupDefinitions =
+    private static readonly IReadOnlyList<NavigationGroupDefinition> NavigationGroupDefinitions =
     [
-        ("Overview", ["Home"]),
-        ("Workspace", ["Data View", "Edit", "Bulk Update", "Sync / Refresh"]),
-        ("Administration", ["Connection Manager", "Settings", "Saved Profiles", "Logs / History"]),
-        ("Help", ["About"]),
+        new("Overview", ["Home"]),
+        new("Workspace", ["Data View", "Edit", "Bulk Update", "Sync / Refresh"]),
+        new("Administration", ["Connection Manager", "Settings", "Saved Profiles", "Logs / History"]),
+        new("Help", ["About"]),
     ];
 
     private readonly IActivityLogService _activityLogService;
@@ -159,15 +159,15 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
 
         NavigationMenuGroups.Clear();
-        foreach (var (groupTitle, pageTitles) in NavigationGroupDefinitions)
+        foreach (var definition in NavigationGroupDefinitions)
         {
             var items = NavigationItems
-                .Where(item => pageTitles.Contains(item.Title, StringComparer.OrdinalIgnoreCase))
+                .Where(item => definition.PageTitles.Contains(item.Title))
                 .ToArray();
 
             if (items.Length > 0)
             {
-                NavigationMenuGroups.Add(new NavigationMenuGroup(groupTitle, items));
+                NavigationMenuGroups.Add(new NavigationMenuGroup(definition.GroupTitle, items));
             }
         }
 
@@ -195,5 +195,18 @@ public sealed class MainWindowViewModel : ViewModelBase
         {
             group.UpdateSelectionState();
         }
+    }
+
+    private sealed class NavigationGroupDefinition
+    {
+        public NavigationGroupDefinition(string groupTitle, IEnumerable<string> pageTitles)
+        {
+            GroupTitle = groupTitle;
+            PageTitles = new HashSet<string>(pageTitles, StringComparer.OrdinalIgnoreCase);
+        }
+
+        public string GroupTitle { get; }
+
+        public HashSet<string> PageTitles { get; }
     }
 }
