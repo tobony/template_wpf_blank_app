@@ -133,7 +133,7 @@ public sealed class DataViewPageViewModel : PageViewModelBase
         private set => SetProperty(ref _currentPageNumber, Math.Max(1, value));
     }
 
-    public int TotalPages => Math.Max(1, (int)Math.Ceiling(GetFilteredItems().Count / (double)PageSize));
+    public int TotalPages => Math.Max(1, (int)Math.Ceiling(GetFilteredItems().Count() / (double)PageSize));
 
     public string PageSummary => $"Page {CurrentPageNumber} of {TotalPages}";
 
