@@ -79,7 +79,16 @@ public sealed class SavedProfilesPageViewModel : PageViewModelBase
             Profiles.Add(name);
         }
 
-        SelectedProfileName ??= Profiles.FirstOrDefault();
+        var nextSelection = !string.IsNullOrWhiteSpace(SelectedProfileName) && Profiles.Contains(SelectedProfileName)
+            ? SelectedProfileName
+            : Profiles.FirstOrDefault();
+
+        SelectedProfileName = nextSelection;
+        if (nextSelection is null)
+        {
+            OnPropertyChanged(nameof(SelectedProfileName));
+        }
+
         _activityLogService.Add("Profiles", "Refreshed saved profile list.", $"Profiles available: {Profiles.Count}");
     }
 

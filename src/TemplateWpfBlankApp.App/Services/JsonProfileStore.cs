@@ -61,7 +61,8 @@ public sealed class JsonProfileStore : IProfileStore
 
     private string GetProfilePath(string profileName)
     {
-        var safeName = string.Concat(profileName.Select(ch => Path.GetInvalidFileNameChars().Contains(ch) ? '_' : ch));
+        var invalidFileNameChars = Path.GetInvalidFileNameChars();
+        var safeName = string.Concat(profileName.Select(ch => invalidFileNameChars.Contains(ch) ? '_' : ch));
         return Path.Combine(StorageFolderPath, $"{safeName}.json");
     }
 }
