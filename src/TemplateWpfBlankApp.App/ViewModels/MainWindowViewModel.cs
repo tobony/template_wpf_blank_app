@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using TemplateWpfBlankApp.App.Models;
 using TemplateWpfBlankApp.App.Services;
 
@@ -23,6 +24,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     {
         Profile = profile;
         _activityLogService = activityLogService;
+        Profile.PropertyChanged += ProfileOnPropertyChanged;
 
         var homePageViewModel = new HomeViewModel(profile, activityLogService, connectionService);
         var dataViewPageViewModel = new DataViewPageViewModel(workspaceService);
@@ -97,6 +99,14 @@ public sealed class MainWindowViewModel : ViewModelBase
         if (latest is not null)
         {
             StatusMessage = $"{latest.Timestamp:t} · {latest.Category}: {latest.Message}";
+        }
+    }
+
+    private void ProfileOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(AppProfile.EnvironmentName))
+        {
+            OnPropertyChanged(nameof(WindowTitle));
         }
     }
 
