@@ -56,7 +56,7 @@ jobs:
             $releaseName = $env:RELEASE_NAME_INPUT
           }
 
-          $assetName = "wpf-blank-app-win-x64-single-file-$($env:TAG_NAME).exe"
+          $assetName = "wpf-blank-app-win-x64-$($env:TAG_NAME).exe"
 
           "release_name=$releaseName" >> $env:GITHUB_OUTPUT
           "asset_name=$assetName" >> $env:GITHUB_OUTPUT
