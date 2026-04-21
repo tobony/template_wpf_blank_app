@@ -1,4 +1,4 @@
-# Template WPF Blank App
+# WPF Blank App
 
 Reusable WPF shell template for internal business applications that need a standard enterprise menu structure before wiring in real SQL, SharePoint, Microsoft Graph, or Power BI integrations.
 
@@ -14,7 +14,7 @@ Reusable WPF shell template for internal business applications that need a stand
 
 ## Project structure
 
-- `./src/TemplateWpfBlankApp.App` - WPF application
+- `./src/WpfBlankApp.App` - WPF application
 - `ViewModels` - MVVM presentation logic for shell pages
 - `Services` - profile persistence, mock connection testing, activity log, and sample workspace services
 - `Models` - reusable data contracts for records, profiles, connections, and logs

@@ -51,12 +51,12 @@ jobs:
           TAG_NAME: ${{ inputs.tag_name }}
         run: |
           if ([string]::IsNullOrWhiteSpace($env:RELEASE_NAME_INPUT)) {
-            $releaseName = "Template WPF Blank App $($env:TAG_NAME)"
+            $releaseName = "WPF Blank App $($env:TAG_NAME)"
           } else {
             $releaseName = $env:RELEASE_NAME_INPUT
           }
 
-          $assetName = "template-wpf-blank-app-win-x64-single-file-$($env:TAG_NAME).exe"
+          $assetName = "wpf-blank-app-win-x64-single-file-$($env:TAG_NAME).exe"
 
           "release_name=$releaseName" >> $env:GITHUB_OUTPUT
           "asset_name=$assetName" >> $env:GITHUB_OUTPUT
@@ -64,7 +64,7 @@ jobs:
       - name: Publish single-file exe
         run: >
           dotnet publish
-          src/TemplateWpfBlankApp.App/TemplateWpfBlankApp.App.csproj
+          src/WpfBlankApp.App/WpfBlankApp.App.csproj
           -c Release
           -r win-x64
           --self-contained true
@@ -77,7 +77,7 @@ jobs:
         shell: pwsh
         run: >
           Copy-Item
-          -Path "${{ github.workspace }}\publish\win-x64\TemplateWpfBlankApp.App.exe"
+          -Path "${{ github.workspace }}\publish\win-x64\WpfBlankApp.App.exe"
           -Destination "${{ github.workspace }}\${{ steps.metadata.outputs.asset_name }}"
           -Force
 
